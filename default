@@ -1,0 +1,105 @@
+
+server {
+	server_name justitiaa.co www.justitiaa.co;
+
+   	listen 80 default_server;
+	listen [::]:80 default_server ipv6only=on;
+
+	root /var/www/html/;
+        index index.php home.html index.htm index.nginx-debian.html;
+
+        location / {
+                try_files $uri $uri/ /index.php$is_args$args;
+        }
+        location ~ \.php$ {
+                include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+                fastcgi_read_timeout 300;
+        }
+	
+   
+
+
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/justitiaa.co/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/justitiaa.co/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+server {
+	server_name admin.justitiaa.co;
+
+   	listen 81;
+	
+
+	
+        root /var/www/html/justitiaa_admin/public/;
+        index index.php home.html index.htm index.nginx-debian.html;
+
+        location / {
+                try_files $uri $uri/ /index.php$is_args$args;
+        }
+        location ~ \.php$ {
+                include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+                fastcgi_read_timeout 300;
+        }
+	
+
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/admin.justitiaa.co/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/admin.justitiaa.co/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+	server {
+	listen 82;	
+	server_name api.justitiaa.co;
+
+	location / {
+		proxy_pass "http://127.0.0.1:6000";  
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection 'upgrade';
+		proxy_set_header   X-Real-IP $remote_addr;
+		proxy_set_header   Host      $http_host;
+		proxy_connect_timeout       300;
+		proxy_send_timeout          300;
+		proxy_read_timeout          300;
+		send_timeout                300;
+
+	}
+
+ 
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/api.justitiaa.co/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/api.justitiaa.co/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+	
+server {
+    if ($host = www.admin.justitiaa.co) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+   
+    server_name www.admin.justitiaa.co;
+    listen 81;
+    return 404; # managed by Certbot
+
+
+}
+
+
+
